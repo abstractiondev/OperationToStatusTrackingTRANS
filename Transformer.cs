@@ -52,14 +52,82 @@ namespace OperationToStatusTrackingTRANS
 
         public static StatusTrackingAbstractionType TransformAbstraction(OperationAbstractionType fromAbs)
         {
-            StatusTrackingAbstractionType toAbs = new StatusTrackingAbstractionType()
-            {
-                Groups = new GroupType[] { new GroupType() { GroupRef = new [] { new GroupRefType { groupName="Tööt tööt" } }
-                    , ItemRef = new [] { new ItemRefType { itemName="Kuukaa" } }, name = "Tööt tööt" } }
-
+            StatusTrackingAbstractionType toAbs = new StatusTrackingAbstractionType
+                                                      {
+                                                         Groups = fromAbs.Operations.Operation.Select(GetStatusGroup).ToArray(),
+                                                         StatusItems = fromAbs.Operations.Operation.SelectMany(GetStatusItems).ToArray()
             };
+            CleanupMissingGroupRefs(toAbs);
             return toAbs;
         }
 
+        private static void CleanupMissingGroupRefs(StatusTrackingAbstractionType toAbs)
+        {
+            foreach(var grp in toAbs.Groups)
+            {
+                grp.GroupRef =
+                    grp.GroupRef.Where(
+                        groupRef => toAbs.Groups.Count(existingGroup => groupRef.groupName == existingGroup.name) > 0).
+                        ToArray();
+            }
+        }
+
+        private static StatusItemType[] GetStatusItems(OperationType operation)
+        {
+            List<StatusItemType> result = new List<StatusItemType>();
+            result.AddRange(operation.Execution.SequentialExecution.Select(GetExecutionStatusItem));
+            return result.ToArray();
+        }
+
+        private static StatusItemType GetExecutionStatusItem(object execItem)
+        {
+            MethodExecuteType methodExec = execItem as MethodExecuteType;
+            OperationExecuteType operationExec = execItem as OperationExecuteType;
+            TargetDefinitionType targetDef = execItem as TargetDefinitionType;
+            string execNamePrefix = "Execution_";
+            dynamic dynitem = execItem;
+            StatusItemType result = new StatusItemType
+                           {
+                               name = execNamePrefix + dynitem.name,
+                               StatusValue = new StatusValueType
+                                                 {
+                                                     indicatorValue = 1,
+                                                     trafficLightIndicator = GetTrafficLightIndicator(dynitem.state)
+                                                 }
+                           };
+            return result;
+        }
+
+        private static StatusValueTypeTrafficLightIndicator GetTrafficLightIndicator(VariableTypeState state)
+        {
+            switch(state)
+            {
+                case VariableTypeState.underDesign:
+                    return StatusValueTypeTrafficLightIndicator.red;
+                case VariableTypeState.designApproved:
+                    return StatusValueTypeTrafficLightIndicator.yellow;
+                case VariableTypeState.implemented:
+                    return StatusValueTypeTrafficLightIndicator.green;
+                default:
+                    throw new NotSupportedException("Variabletype state: " + state);
+            }
+        }
+
+        private static GroupType GetStatusGroup(OperationType operation)
+        {
+            StatusItemType[] items = GetStatusItems(operation);
+            ItemRefType[] statusItemRefs = items.Select(item => new ItemRefType {itemName = item.name}).ToArray();
+            GroupRefType[] groupRefs = operation.Execution.SequentialExecution
+                .Select(exec => exec as OperationExecuteType)
+                .Where(opexec => opexec != null)
+                .Select(opexec => new GroupRefType {groupName = opexec.targetOperationName}).ToArray();
+            GroupType result = new GroupType()
+                                   {
+                                       name = operation.name,
+                                       ItemRef = statusItemRefs,
+                                       GroupRef = groupRefs
+                                   };
+            return result;
+        }
     }
 }
