@@ -75,27 +75,31 @@ namespace OperationToStatusTrackingTRANS
         private static StatusItemType[] GetStatusItems(OperationType operation)
         {
             List<StatusItemType> result = new List<StatusItemType>();
-            result.AddRange(operation.Execution.SequentialExecution.Select(GetExecutionStatusItem));
+            result.AddRange(operation.Parameters.Parameter.Select(GetDefaultStatusItem));
+            result.AddRange(operation.Parameters.Items.Select(GetDefaultStatusItem));
+            result.AddRange(operation.Execution.SequentialExecution.Select(GetDefaultStatusItem));
+            result.AddRange((operation.OperationReturnValues ?? new OperationReturnValuesType { ReturnValue = new VariableType[0]} ).ReturnValue.Select(GetDefaultStatusItem));
+            result.ForEach(statusItem => statusItem.name = operation.name + "_" + statusItem.name);
             return result.ToArray();
         }
 
-        private static StatusItemType GetExecutionStatusItem(object execItem)
+        private static StatusItemType GetDefaultStatusItem(object objWithNameAndState)
         {
-            MethodExecuteType methodExec = execItem as MethodExecuteType;
-            OperationExecuteType operationExec = execItem as OperationExecuteType;
-            TargetDefinitionType targetDef = execItem as TargetDefinitionType;
-            string execNamePrefix = "Execution_";
-            dynamic dynitem = execItem;
-            StatusItemType result = new StatusItemType
-                           {
-                               name = execNamePrefix + dynitem.name,
-                               StatusValue = new StatusValueType
-                                                 {
-                                                     indicatorValue = 1,
-                                                     trafficLightIndicator = GetTrafficLightIndicator(dynitem.state)
-                                                 }
-                           };
-            return result;
+            return GetStatusItemType("", objWithNameAndState);
+        }
+
+        private static StatusItemType GetStatusItemType(string prefixName, object objWithNameAndState, decimal difficultyFactor = 1)
+        {
+            dynamic dynObj = objWithNameAndState;
+            return new StatusItemType
+                       {
+                           name = prefixName + dynObj.name,
+                           StatusValue = new StatusValueType
+                                             {
+                                                 indicatorValue = difficultyFactor,
+                                                 trafficLightIndicator = GetTrafficLightIndicator(dynObj.state)
+                                             }
+                       };
         }
 
         private static StatusValueTypeTrafficLightIndicator GetTrafficLightIndicator(VariableTypeState state)
