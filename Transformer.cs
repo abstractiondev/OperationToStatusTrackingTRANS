@@ -94,6 +94,8 @@ namespace OperationToStatusTrackingTRANS
             return new StatusItemType
                        {
                            name = prefixName + dynObj.name,
+                           displayName = dynObj.name,
+                           description = dynObj.designDesc,
                            StatusValue = new StatusValueType
                                              {
                                                  indicatorValue = difficultyFactor,
