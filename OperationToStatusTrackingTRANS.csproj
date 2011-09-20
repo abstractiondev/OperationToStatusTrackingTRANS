@@ -40,17 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\OperationABS\Operation\Operation_v1_0_namespace.cs">
+      <Link>Operation_v1_0_namespace.cs</Link>
+    </Compile>
+    <Compile Include="..\StatusTrackingABS\StatusTracking\StatusTracking_v1_0_namespace.cs">
+      <Link>StatusTracking_v1_0_namespace.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OperationABS\OperationABS.csproj">
-      <Project>{C7A918BA-41E4-43A2-94F1-AECF9F9334DB}</Project>
-      <Name>OperationABS</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\StatusTrackingABS\StatusTrackingABS.csproj">
-      <Project>{6CF15F99-C6A9-44E9-96F0-CAD4564A8923}</Project>
-      <Name>StatusTrackingABS</Name>
-    </ProjectReference>
+    <Compile Include="Transformer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
