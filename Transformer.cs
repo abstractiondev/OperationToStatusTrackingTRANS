@@ -99,9 +99,25 @@ namespace OperationToStatusTrackingTRANS
                            StatusValue = new StatusValueType
                                              {
                                                  indicatorValue = difficultyFactor,
+                                                 indicatorDisplayText = GetIndicatorDisplayText(dynObj.state),
                                                  trafficLightIndicator = GetTrafficLightIndicator(dynObj.state)
                                              }
                        };
+        }
+
+        private static string GetIndicatorDisplayText(VariableTypeState state)
+        {
+            switch(state)
+            {
+                case VariableTypeState.underDesign:
+                    return "Under design";
+                case VariableTypeState.designApproved:
+                    return "Being implemented";
+                case VariableTypeState.implemented:
+                    return "Implemented";
+                default:
+                    throw new NotSupportedException("VariableTypeState value: " + state);
+            }
         }
 
         private static StatusValueTypeTrafficLightIndicator GetTrafficLightIndicator(VariableTypeState state)
