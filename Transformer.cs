@@ -75,26 +75,33 @@ namespace OperationToStatusTrackingTRANS
         private static StatusItemType[] GetStatusItems(OperationType operation)
         {
             List<StatusItemType> result = new List<StatusItemType>();
-            result.AddRange(operation.Parameters.Parameter.Select(GetDefaultStatusItem));
-            result.AddRange(operation.Parameters.Items.Select(GetDefaultStatusItem));
+            if (operation.Parameters != null)
+            {
+                result.AddRange(operation.Parameters.Parameter.Select(GetDefaultStatusItem));
+                result.AddRange(operation.Parameters.Items.Select(GetDefaultStatusItem));
+            }
+
             result.AddRange(operation.Execution.SequentialExecution.Select(GetDefaultStatusItem));
-            result.AddRange((operation.OperationReturnValues ?? new OperationReturnValuesType { ReturnValue = new VariableType[0]} ).ReturnValue.Select(GetDefaultStatusItem));
+            result.AddRange(
+                (operation.OperationReturnValues ?? new OperationReturnValuesType {ReturnValue = new VariableType[0]}).
+                    ReturnValue.Select(GetDefaultStatusItem));
             result.ForEach(statusItem => statusItem.name = operation.name + "_" + statusItem.name);
             return result.ToArray();
         }
 
         private static StatusItemType GetDefaultStatusItem(object objWithNameAndState)
         {
-            return GetStatusItemType("", objWithNameAndState);
+            string displayNamePrefix = objWithNameAndState.GetType().Name + ": ";
+            return GetStatusItemType("", displayNamePrefix, objWithNameAndState);
         }
 
-        private static StatusItemType GetStatusItemType(string prefixName, object objWithNameAndState, decimal difficultyFactor = 1)
+        private static StatusItemType GetStatusItemType(string prefixName, string displayNamePrefix, object objWithNameAndState, decimal difficultyFactor = 1)
         {
             dynamic dynObj = objWithNameAndState;
             return new StatusItemType
                        {
                            name = prefixName + dynObj.name,
-                           displayName = dynObj.name,
+                           displayName = displayNamePrefix + dynObj.name,
                            description = dynObj.designDesc,
                            StatusValue = new StatusValueType
                                              {
