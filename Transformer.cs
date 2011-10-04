@@ -153,6 +153,7 @@ namespace OperationToStatusTrackingTRANS
             GroupType result = new GroupType()
                                    {
                                        name = operation.name,
+                                       groupRole = operation.isRootOperation ? GroupTypeGroupRole.Root : GroupTypeGroupRole.None,
                                        ItemRef = statusItemRefs,
                                        GroupRef = groupRefs
                                    };
