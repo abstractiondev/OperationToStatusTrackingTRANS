@@ -54,8 +54,8 @@ namespace OperationToStatusTrackingTRANS
         {
             StatusTrackingAbstractionType toAbs = new StatusTrackingAbstractionType
                                                       {
-                                                         Groups = fromAbs.Operations.Operation.Select(GetStatusGroup).ToArray(),
-                                                         StatusItems = fromAbs.Operations.Operation.SelectMany(GetStatusItems).ToArray()
+                                                         Groups = fromAbs.Operations.SelectMany(opers => opers.Operation).Select(GetStatusGroup).ToArray(),
+                                                         StatusItems = fromAbs.Operations.SelectMany(opers => opers.Operation).SelectMany(GetStatusItems).ToArray()
             };
             CleanupMissingGroupRefs(toAbs);
             return toAbs;
