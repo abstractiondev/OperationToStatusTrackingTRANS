@@ -78,7 +78,8 @@ namespace OperationToStatusTrackingTRANS
             if (operation.Parameters != null)
             {
                 result.AddRange(operation.Parameters.Parameter.Select(GetDefaultStatusItem));
-                result.AddRange(operation.Parameters.Items.Select(GetDefaultStatusItem));
+                if (operation.Parameters.Items != null)
+                    result.AddRange(operation.Parameters.Items.Select(GetDefaultStatusItem));
             }
 
             result.AddRange(operation.Execution.SequentialExecution.Select(GetDefaultStatusItem));
