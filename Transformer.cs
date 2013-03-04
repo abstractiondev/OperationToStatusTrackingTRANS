@@ -53,10 +53,14 @@ namespace OperationToStatusTrackingTRANS
         public static StatusTrackingAbstractionType TransformAbstraction(OperationAbstractionType fromAbs)
         {
             StatusTrackingAbstractionType toAbs = new StatusTrackingAbstractionType
-                                                      {
-                                                         Groups = fromAbs.Operations.SelectMany(opers => opers.Operation).Select(GetStatusGroup).ToArray(),
-                                                         StatusItems = fromAbs.Operations.SelectMany(opers => opers.Operation).SelectMany(GetStatusItems).ToArray()
-            };
+                {
+                    Groups = fromAbs.Operations.SelectMany(opers => opers.Operation).Select(GetStatusGroup).ToArray()
+                };
+            toAbs.StatusItems = new StatusItemsType();
+            toAbs.StatusItems.scopeName = String.Join("_",
+                                                      fromAbs.Operations.Select(opers => opers.codeNamespace).ToArray());
+            toAbs.StatusItems.StatusItem =
+                fromAbs.Operations.SelectMany(opers => opers.Operation).SelectMany(GetStatusItems).ToArray();
             CleanupMissingGroupRefs(toAbs);
             return toAbs;
         }
