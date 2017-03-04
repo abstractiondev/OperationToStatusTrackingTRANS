@@ -86,7 +86,8 @@ namespace OperationToStatusTrackingTRANS
                     result.AddRange(operation.Parameters.Items.Select(GetDefaultStatusItem));
             }
 
-            result.AddRange(operation.Execution.SequentialExecution.Select(GetDefaultStatusItem));
+            if(operation.Execution?.SequentialExecution != null)
+                result.AddRange(operation.Execution.SequentialExecution.Select(GetDefaultStatusItem));
             result.AddRange(
                 (operation.OperationReturnValues ?? new OperationReturnValuesType {ReturnValue = new VariableType[0]}).
                     ReturnValue.Select(GetDefaultStatusItem));
@@ -151,10 +152,11 @@ namespace OperationToStatusTrackingTRANS
         {
             StatusItemType[] items = GetStatusItems(operation);
             ItemRefType[] statusItemRefs = items.Select(item => new ItemRefType {itemName = item.name}).ToArray();
-            GroupRefType[] groupRefs = operation.Execution.SequentialExecution
-                .Select(exec => exec as OperationExecuteType)
-                .Where(opexec => opexec != null)
-                .Select(opexec => new GroupRefType {groupName = opexec.targetOperationName}).ToArray();
+            GroupRefType[] groupRefs = operation.Execution?.SequentialExecution
+                                           .Select(exec => exec as OperationExecuteType)
+                                           .Where(opexec => opexec != null)
+                                           .Select(opexec => new GroupRefType {groupName = opexec.targetOperationName})
+                                           .ToArray() ?? new GroupRefType[0];
             GroupType result = new GroupType()
                                    {
                                        name = operation.name,
